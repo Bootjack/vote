@@ -35,13 +35,15 @@ class Ballot extends Component {
   }
 
   state = {
+    userId: 1,
     vote: {
       options: []
     },
     selections: [ null, null, null ]
   }
 
-  componentDidMount() {
+  componentWillMount() {
+    this.setState({userId: Math.round(Math.random() * 0xffffff)});
     request.get('/api/vote/' + this.props.params.electionId)
       .end((err, res) => {
         this.setState({ vote: (res ? res.body : {}) })
@@ -55,7 +57,7 @@ class Ballot extends Component {
   handleVoteClick = () => {
     const details = {
       electionId: this.state.vote.id,
-      userId: 1,
+      userId: this.state.userId,
       options: this.state.selections.map((selection, index) => ({ id: selection, rank: index }))
     };
     request.post('/api/vote')

@@ -18,9 +18,11 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Endpoints
 import election from './controllers/elections';
+import tally from './controllers/tally';
 app.use(bodyParser.json());
 app.get('/api/vote/:electionId', election.vote);
 app.post('/api/vote', election.submitVote);
+app.get('/api/tally/:electionId', tally.winner);
 
 const fontScript = `
         var WebFontConfig = {

@@ -6,7 +6,7 @@ const sqlite3Client = sqlite3.verbose();
 const dbPath = path.resolve(__dirname, '../data/elections');
 const db = new sqlite3Client.Database(dbPath);
 
-function tallyResults(election_id, done){
+export function legacy (election_id, done){
   let votes = {};
   let options = new Set();
 
@@ -116,6 +116,53 @@ function tallyResults(election_id, done){
 //
 // db.close();
 
-tallyResults(1, function(output){
+results(1, function(output){
   console.log(output);
 });
+
+
+function aggregateVoters(rows) {
+  return rows.reduce((acc, {voter_id, ...row}) => ({...acc, [voter_id]: (acc[voter_id] && acc[voter_id].rank < row.rank) ? acc[voter_id] : row}), {});
+}
+
+function countVotes(votes) {
+  return Object.values(votes).reduce((acc, {option_id}) => ({...acc, [option_id]: (acc[option_id] || 0) + 1}), {});
+}
+
+function testWinner(results) {
+  const keys = Object.keys(results);
+  if (keys.length < 2) return false;
+  const plurality = keys.reduce((optA, optB) => results[optA] > results[optB] ? optA : optB);
+  const sum = keys.reduce((total, opt) => total + results[opt], 0);
+  console.log('plurality', plurality, 'with', results[plurality], '/', sum);
+  return results[plurality] > sum / 2 && plurality;
+}
+
+function filterLoser(results, rows) {
+  const keys = Object.keys(results);
+  if (keys.length < 2) return false;
+  const loser = keys.reduce((optA, optB) => results[optA] < results[optB] ? optA : optB);
+  console.log('loser', loser);
+  return rows.filter(row => row.option_id != loser);
+}
+
+function runOff(rows) {
+  console.log('--- new runoff round ---')
+  const votes = aggregateVoters(rows);
+  console.log('votes', votes);
+  const results = countVotes(votes);
+  console.log('results', results);
+  const winner = testWinner(results);
+  console.log('winner', winner);
+  const next = filterLoser(results, rows);
+  console.log('next', next);
+  return winner ? winner : next.length > 1 ? runOff(next) : null;
+}
+
+export function results(election_id, done) {
+  const electId = parseInt(election_id, 10);
+  const query = `SELECT voter_id, option_id, rank FROM votes WHERE election_id = ${electId}`;
+  db.all(query, function(err, rows) {
+    done(runOff(rows));
+  });
+}
