@@ -72,48 +72,33 @@ export function addVoterOption(details) {
 }
 
 export function submitVote(details) {
-  // details = {
-  //   electionId: 1,
-  //   userId: 1,
-  //   options: [
-  //     option: {
-  //       id: 1,
-  //       rank: 2
-  //     },
-  //     option: {
-  //       id: 3,
-  //       rank: 1
-  //     },
-  //     option: {
-  //       id: 2,
-  //       rank: 3
-  //     },
-  //   ]
-  // };
-
   const {
     electionId,
-    userId,
+    userName,
     options
   } = details;
 
-  const sql = `
-    INSERT INTO votes (
-      election_id,
-      voter_id,
-      option_id,
-      rank
-    ) VALUES (
-      (?), (?) ,(?) ,(?)
-    )
-  `;
+  const voterQuery = db.prepare('SELECT id FROM voters WHERE name = (?)');
+  voterQuery.get(userName, function(err, user) {
+    if (!user) return;
+    const sql = `
+      INSERT OR REPLACE INTO votes (
+        election_id,
+        voter_id,
+        option_id,
+        rank
+      ) VALUES (
+        (?), (?) ,(?) ,(?)
+      )
+    `;
 
-  const stmt = db.prepare(sql);
-  options.forEach(function(option) {
-    if (option.id === null) {
-      return;
-    }
-    stmt.run(electionId, userId, option.id, option.rank);
+    const stmt = db.prepare(sql);
+    options.forEach(function(option) {
+      if (option.id === null) {
+        return;
+      }
+      stmt.run(electionId, user.id, option.id, option.rank);
+    });
+    stmt.finalize();
   });
-  stmt.finalize();
 }

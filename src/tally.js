@@ -131,8 +131,7 @@ function countVotes(votes) {
 
 function testWinner(results) {
   const keys = Object.keys(results);
-  if (keys.length < 2) return false;
-  const plurality = keys.reduce((optA, optB) => results[optA] > results[optB] ? optA : optB);
+  const plurality = keys.reduce((optA, optB) => results[optA] > results[optB] ? optA : optB, null);
   const sum = keys.reduce((total, opt) => total + results[opt], 0);
   console.log('plurality', plurality, 'with', results[plurality], '/', sum);
   return results[plurality] > sum / 2 && plurality;
@@ -140,7 +139,6 @@ function testWinner(results) {
 
 function filterLoser(results, rows) {
   const keys = Object.keys(results);
-  if (keys.length < 2) return false;
   const loser = keys.reduce((optA, optB) => results[optA] < results[optB] ? optA : optB);
   console.log('loser', loser);
   return rows.filter(row => row.option_id != loser);

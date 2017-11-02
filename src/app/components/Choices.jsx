@@ -3,7 +3,7 @@ import Choice from './Choice';
 
 class Choices extends Component {
   state = {
-    selections: [ null, null, null ]
+    selections: []
   }
 
   constructor(props) {
@@ -11,7 +11,9 @@ class Choices extends Component {
   }
 
   handleChange = (event, index, value, rank) => {
-    let selections = this.state.selections.map((selection, index) => {
+    const selections = this.state.selections;
+    const nextSelections = this.props.options.map((option, index) => {
+      const selection = selections[index];
       if (index == rank) {
         return value;
       }
@@ -21,8 +23,8 @@ class Choices extends Component {
       }
       return selection;
     });
-    this.setState({ selections });
-    this.props.onChange(selections);
+    this.setState({selections: nextSelections});
+    this.props.onChange(nextSelections);
   }
 
   getChangeHandler = (rank) => (event, index, value) => this.handleChange(event, index, value, rank);
@@ -30,9 +32,17 @@ class Choices extends Component {
   render() {
     return (
       <div>
-        <Choice label="1st Choice" rank={0} options={this.props.options} value={this.state.selections[0]} onChange={this.getChangeHandler(0)} />
-        <Choice label="2nd Choice" rank={1} options={this.props.options} value={this.state.selections[1]} onChange={this.getChangeHandler(1)} />
-        <Choice label="3rd Choice" rank={2} options={this.props.options} value={this.state.selections[2]} onChange={this.getChangeHandler(2)} />
+        {this.props.options.map((opt, i) => {
+          return (
+            <Choice
+              key={i}
+              rank={i}
+              options={this.props.options}
+              value={this.state.selections[i]}
+              onChange={this.getChangeHandler(i)}
+            />
+          );
+        })}
       </div>
     );
   }

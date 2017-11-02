@@ -36,6 +36,7 @@ class Ballot extends Component {
 
   state = {
     userId: 1,
+    userName: '',
     vote: {
       options: []
     },
@@ -54,10 +55,14 @@ class Ballot extends Component {
     this.setState({ selections });
   }
 
+  handleNameChange = evt => {
+    this.setState({userName: evt.target.value});
+  }
+
   handleVoteClick = () => {
     const details = {
       electionId: this.state.vote.id,
-      userId: this.state.userId,
+      userName: this.state.userName,
       options: this.state.selections.map((selection, index) => ({ id: selection, rank: index }))
     };
     request.post('/api/vote')
@@ -73,6 +78,10 @@ class Ballot extends Component {
     return (
       <div>
         <h2>Ballot Page</h2>
+        <label>
+          First Name
+          <input onChange={this.handleNameChange} />
+        </label>
         <Choices options={this.state.vote.options} onChange={this.handleChoicesChange}/>
         <RaisedButton
           label="Vote"

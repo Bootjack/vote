@@ -23,5 +23,6 @@ export default {
   submitVote: function submitVoteHandler(req, res) {
     let result = {};
     result = submitVote(req.body);
+    res.sendStatus(202);
   }
 };
