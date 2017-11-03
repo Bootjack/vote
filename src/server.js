@@ -23,6 +23,7 @@ app.use(bodyParser.json());
 app.get('/api/vote/:electionId', election.vote);
 app.post('/api/vote', election.submitVote);
 app.get('/api/tally/:electionId', tally.winner);
+app.get('/api/tally/popularity/:electionId', tally.popularity);
 
 const fontScript = `
         var WebFontConfig = {

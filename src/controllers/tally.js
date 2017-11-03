@@ -1,4 +1,4 @@
-import {results} from '../tally';
+import {popularity, results} from '../tally';
 
 export default {
 
@@ -8,8 +8,19 @@ export default {
    * @returns {void}
    */
   winner: function indexHandler(req, res) {
-    results(req.params.electionId, function(result, err) {
+    const electionId = req.params.electionId
+    results(electionId, function(result, err) {
       console.log("tally result:", result);
+      if (err) {
+        console.error(err);
+      }
+      res.json(result);
+    });
+  },
+
+  popularity: function popularityHandler(req, res) {
+    const electionId = req.params.electionId
+    popularity(electionId, function(result, err) {
       if (err) {
         console.error(err);
       }

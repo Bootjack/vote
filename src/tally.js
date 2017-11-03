@@ -6,121 +6,6 @@ const sqlite3Client = sqlite3.verbose();
 const dbPath = path.resolve(__dirname, '../data/elections');
 const db = new sqlite3Client.Database(dbPath);
 
-export function legacy (election_id, done){
-  let votes = {};
-  let options = new Set();
-
-  db.each("SELECT voter_id, option_id, rank FROM votes WHERE election_id = " + election_id, function(err, row){
-    if(!votes[row.voter_id])
-      votes[row.voter_id] = [];
-    votes[row.voter_id].push({option_id: row.option_id, rank: row.rank});
-  }, function(err){
-    Object.keys(votes).forEach(function(key, index){
-      votes[key].sort(function(a, b){
-        if(a.rank > b.rank)
-          return 1;
-        return -1;
-      });
-
-      votes[key] = votes[key].map(function(obj){
-        options.add(obj.option_id);
-        return obj.option_id;
-      });
-    });
-
-    var matrix_map = Array.from(options);
-
-    var pair_matrix = [];
-    for(var i=0; i<matrix_map.length; ++i){
-      var matrix_row = [];
-      for(var j=0; j<matrix_map.length; ++j)
-        matrix_row.push(0);
-      pair_matrix.push(matrix_row);
-    }
-
-    Object.keys(votes).forEach(function(key, index){
-      let pos_i, pos_j
-      for(var i=0; i<matrix_map.length-1; ++i){
-        for(var j=i+1; j<matrix_map.length; ++j){
-          pos_i = votes[key].indexOf(matrix_map[i]);
-          pos_j = votes[key].indexOf(matrix_map[j]);
-
-          if(pos_i == -1){
-            if(pos_j != -1)
-              pair_matrix[j][i] += 1;
-          }else{
-            if(pos_j == -1)
-              pair_matrix[i][j] += 1;
-            else if(pos_i < pos_j)
-              pair_matrix[i][j] += 1;
-            else
-              pair_matrix[j][i] += 1;
-          }
-        }
-      }
-    });
-
-    var path_matrix = [];
-    for(var i=0; i<matrix_map.length; ++i){
-      var matrix_row = [];
-      for(var j=0; j<matrix_map.length; ++j)
-        matrix_row.push(pair_matrix[i][j]);
-      path_matrix.push(matrix_row);
-    }
-
-    for(var i=0; i<matrix_map.length; ++i)
-      for(var j=0; j<matrix_map.length; ++j)
-        if(i!=j)
-          for(var k=0; k<matrix_map.length; ++k)
-            if(i!=k && j!=k)
-              path_matrix[j][k] = Math.max(path_matrix[j][k], Math.min(path_matrix[j][i], path_matrix[i][k]));
-
-    var wins = [];
-    for(var i=0; i<matrix_map.length; ++i)
-      wins.push(0);
-
-    for(var i=0; i<matrix_map.length-1; ++i)
-      for(var j=i+1; j<matrix_map.length; ++j)
-        if(path_matrix[i][j] > path_matrix[j][i])
-          wins[i]++;
-        else if(path_matrix[i][j] < path_matrix[j][i])
-          wins[j]++;
-
-    var max_wins = Math.max.apply(null, wins);
-
-    var winners = [];
-    for(var i=0; i<wins.length; ++i)
-      if(wins[i] == max_wins)
-        winners.push(matrix_map[i]);
-
-    done(winners);
-  })
-}
-
-// db.serialize(function() {
-//   db.run("create table votes (id integer PRIMARY KEY NOT NULL, election_id int NOT NULL, voter_id int NOT NULL, option_id int NOT NULL, rank tinyint NOT NULL)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 1, 6, 3)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 1, 4, 1)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 2, 6, 2)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 1, 5, 2)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 2, 4, 1)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 3, 5, 2)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 2, 5, 3)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 3, 6, 1)");
-//   db.run("INSERT INTO votes (election_id, voter_id, option_id, rank) VALUES (1, 3, 4, 3)");
-//
-//   tallyResults(1, function(output){
-//     console.log(output);
-//   });
-// });
-//
-// db.close();
-
-results(1, function(output){
-  console.log(output);
-});
-
-
 function aggregateVoters(rows) {
   return rows.reduce((acc, {voter_id, ...row}) => ({...acc, [voter_id]: (acc[voter_id] && acc[voter_id].rank < row.rank) ? acc[voter_id] : row}), {});
 }
@@ -130,16 +15,33 @@ function countVotes(votes) {
 }
 
 function testWinner(results) {
-  const keys = Object.keys(results);
-  const plurality = keys.reduce((optA, optB) => results[optA] > results[optB] ? optA : optB, null);
-  const sum = keys.reduce((total, opt) => total + results[opt], 0);
+  const options = Object.keys(results);
+  const plurality = options.reduce((hi, opt) => results[opt] < results[hi] ? hi : opt, null);
+  const sum = options.reduce((total, opt) => total + results[opt], 0);
   console.log('plurality', plurality, 'with', results[plurality], '/', sum);
   return results[plurality] > sum / 2 && plurality;
 }
 
 function filterLoser(results, rows) {
-  const keys = Object.keys(results);
-  const loser = keys.reduce((optA, optB) => results[optA] < results[optB] ? optA : optB);
+  const options = Object.keys(results);
+  const losers = options.reduce((acc, opt) => {
+    const lowest = results[acc[0]] || Infinity;
+    if (results[opt] < lowest) return [opt];
+    if (results[opt] === lowest) return acc.concat(opt);
+    return acc;
+  }, []);
+  console.log('losers', losers);
+  let loser;
+  if (losers.length > 1) {
+    const sums = losers.reduce((acc, opt) => {
+      acc[opt] = rows.filter(row => row.option_id == opt).reduce((total, row) => total + row.rank, 0);
+      return acc;
+    }, {});
+    console.log('loser sums', sums);
+    loser = Object.keys(sums).reduce((worst, opt) => sums[opt] > sums[worst] ? opt : worst);
+  } else {
+    loser = losers[0];
+  }
   console.log('loser', loser);
   return rows.filter(row => row.option_id != loser);
 }
@@ -153,14 +55,33 @@ function runOff(rows) {
   const winner = testWinner(results);
   console.log('winner', winner);
   const next = filterLoser(results, rows);
-  console.log('next', next);
+  console.log('next', next.length);
   return winner ? winner : next.length > 1 ? runOff(next) : null;
 }
 
 export function results(election_id, done) {
   const electId = parseInt(election_id, 10);
-  const query = `SELECT voter_id, option_id, rank FROM votes WHERE election_id = ${electId}`;
+  const query = `SELECT voter_id, option_id, rank, voters.enabled FROM votes LEFT JOIN voters ON voter_id = voters.id WHERE voters.enabled = 1 AND election_id = ${electId}`;
   db.all(query, function(err, rows) {
-    done(runOff(rows));
+    const winner = runOff(rows);
+    db.get(`SELECT * FROM options WHERE id = ${winner}`, (err, result) => {
+      done(result);
+    });
   });
 }
+
+export function popularity(election_id, done) {
+  const electId = parseInt(election_id, 10);
+  const query = `SELECT options.name, sum(rank) as golf_score, voters.enabled FROM votes LEFT JOIN options ON votes.option_id = options.id LEFT JOIN voters ON voter_id = voters.id WHERE voters.enabled = 1 AND election_id = ${electId} GROUP BY option_id ORDER BY golf_score`;
+  db.all(query, function(err, rows) {
+    if (err) {
+      done(err);
+    }
+    const result = rows.reduce((acc, row) => ({...acc, [row.name]: row.golf_score}), {});
+    done(result);
+  });
+}
+
+results(1, function(output){
+  console.log(output);
+});
