@@ -79,7 +79,7 @@ class Ballot extends Component {
       <div>
         <h2>Ballot Page</h2>
         <label>
-          First Name
+          <p>First Name</p>
           <input onChange={this.handleNameChange} />
         </label>
         <Choices options={this.state.vote.options} onChange={this.handleChoicesChange}/>

@@ -34,6 +34,7 @@ export function getElection(electionId, cb) {
     FROM elections
     LEFT JOIN election_option_map map ON map.election_id = elections.id
     LEFT JOIN options ON options.id = map.option_id
+    ORDER BY options.name ASC
     `, function(err, results) {
       if (err) {
         cb(null, { error: err });
