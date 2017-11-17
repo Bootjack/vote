@@ -14,7 +14,8 @@ export default {
       if (err) {
         console.error(err);
       }
-      res.json(result);
+      res.set('Content-Type', 'text/plain');  
+      res.send(result);
     });
   },
 
