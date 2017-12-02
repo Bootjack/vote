@@ -5,18 +5,9 @@
   "main": "dist/server.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexmchardy/vote.git"
+    "url": "https://github.com/Bootjack/vote.git"
   },
-  "scripts": {
-    "babel": "babel src --out-dir dist",
-    "babel:watch": "npm run babel -- -w",
-    "build": "npm run babel",
-    "start": "npm run build && npm run build:webpack && npm run server",
-    "build:webpack": "webpack --config webpack.config.js --progress --colors",
-    "server": "node dist/server.js",
-    "test": ""
-  },
-  "author": "",
+  "author": "Jason Hinebaugh",
   "license": "ISC",
   "dependencies": {
     "body-parser": "1.15.2",
@@ -30,6 +21,7 @@
     "react-router-redux": "4.0.7",
     "react-tap-event-plugin": "1.0.0",
     "redux": "3.6.0",
+    "serverless-webpack": "^4.1.0",
     "sqlite3": "3.1.8",
     "superagent": "2.3.0"
   },
@@ -48,5 +40,11 @@
     "transfer-webpack-plugin": "0.1.4",
     "webpack": "1.13.3",
     "webpack-dev-server": "1.16.2"
+  },
+  "scripts": {
+    "build": "webpack",
+    "create": "awslocal lambda create-function --function-name tally-votes --runtime nodejs6.10 --role '' --handler handler.results --zip-file fileb://build/handler.zip",
+    "zip": "zip -j build/handler.zip build/handler.js",
+    "start": "LAMBDA_EXECUTOR=docker SERVICES=apigateway,dynamodb,lambda,s3 localstack start"
   }
 }
