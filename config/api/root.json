@@ -1,0 +1,9 @@
+{
+    "name": "Voting", 
+    "description": "Help a group make decisions by putting the options to a vote", 
+    "version": "1.0", 
+    "cloneFrom": "", 
+    "binaryMediaTypes": [
+        ""
+    ]
+}

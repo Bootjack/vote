@@ -1,0 +1,18 @@
+{
+  "AttributeDefinitions": [{
+    "AttributeName": "Email",
+    "AttributeType": "S"
+  }],
+  "TableName": "Voters",
+  "KeySchema": [{
+    "AttributeName": "Email",
+    "KeyType": "HASH"
+  }],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 1,
+    "WriteCapacityUnits": 1
+  },
+  "StreamSpecification": {
+    "StreamEnabled": false
+  }
+}

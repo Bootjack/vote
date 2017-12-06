@@ -1,5 +1,10 @@
-/dist/
-/node_modules/
-/data/**/*
+.env
+build
+dist
+node_modules/
+data/**/*
 
-npm-debug.log
+aws-serverless-workshops-master
+
+*.log
+

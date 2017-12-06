@@ -1,0 +1,24 @@
+{
+  "AttributeDefinitions": [{
+    "AttributeName": "ElectionName",
+    "AttributeType": "S"
+  }, {
+    "AttributeName": "VoterEmail",
+    "AttributeType": "S"
+  }],
+  "TableName": "Ballots",
+  "KeySchema": [{
+    "AttributeName": "ElectionName",
+    "KeyType": "HASH"
+  }, {
+    "AttributeName": "VoterEmail",
+    "KeyType": "SORT"
+  }],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 1,
+    "WriteCapacityUnits": 1
+  },
+  "StreamSpecification": {
+    "StreamEnabled": false
+  }
+}

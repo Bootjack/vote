@@ -1,0 +1,18 @@
+{
+  "AttributeDefinitions": [{
+    "AttributeName": "Name",
+    "AttributeType": "S"
+  }],
+  "TableName": "Elections",
+  "KeySchema": [{
+    "AttributeName": "Name",
+    "KeyType": "HASH"
+  }],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 1,
+    "WriteCapacityUnits": 1
+  },
+  "StreamSpecification": {
+    "StreamEnabled": false
+  }
+}

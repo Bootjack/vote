@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Polling</title>
+  <meta charset="utf-8" />
+</head>
+<body>
+  <h1>Polling</h1>
+  <div id="greeting"></div>
+  <div>This is where you vote.</div>
+
+  <script type="text/javascript">
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId: '156792701599217',
+        cookie: true,
+        xfbml: true,
+        version: 'v2.11'
+      });
+      FB.AppEvents.logPageView();   
+      onFacebookReady();
+    };
+    
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
+  <script src="index.js"></script>
+</body>
+</html>
+
