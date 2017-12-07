@@ -47,6 +47,13 @@ export function popularity (election_id, done) {
 }
 
 export function api(event, context, callback) {
-  callback(null, JSON.stringify(event, null, 2));
+  const response = {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(event)
+  };
+  callback(null, response);
 }
 

@@ -1,6 +1,6 @@
 {
-    "name": "Voting", 
-    "description": "Help a group make decisions by putting the options to a vote", 
+    "name": "Polling", 
+    "description": "An interface for accessing election and ballot data",
     "version": "1.0", 
     "cloneFrom": "", 
     "binaryMediaTypes": [

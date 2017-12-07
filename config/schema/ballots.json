@@ -12,7 +12,7 @@
     "KeyType": "HASH"
   }, {
     "AttributeName": "VoterEmail",
-    "KeyType": "SORT"
+    "KeyType": "RANGE"
   }],
   "ProvisionedThroughput": {
     "ReadCapacityUnits": 1,

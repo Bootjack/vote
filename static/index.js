@@ -1,3 +1,5 @@
+// TODO Need to use webpack now to import the AWS SDK and gain access to Cognito and API Gateway
+
 function updateUserName(user) {
   const greetingNode = document.getElementById('greeting');
   if (greetingNode) {
