@@ -4,7 +4,7 @@ import {
   filterLoser,
   findLoser,
   testWinner
-} from './src/tally.js';
+} from 'tally';
 
 function runOff(rows, output = '', count = 1) {
   const options = rows.reduce((acc, row) => ({...acc, [row.option_id]: row.name}), {});
@@ -56,4 +56,3 @@ export function api(event, context, callback) {
   };
   callback(null, response);
 }
-
